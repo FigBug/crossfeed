@@ -30,6 +30,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <vector>
 #include <unistd.h>
 using namespace std;
 using namespace fdesign;
@@ -64,12 +65,19 @@ static void parseopts(int argc, char *argv[]) {
 		usage(argc, argv);
 }
 
-int main(int argc, char *argv[]) {
-	ios_base::sync_with_stdio(false);
+std::vector<double> doFrequency(int freq)
+{
+    std::vector<double> results;
+    
+    SR = freq;
+    FDELAY = round((40.*SR)/96000.);
+    TDELAY = round((22.*SR)/96000.);
+
+	//ios_base::sync_with_stdio(false);
 	fp transfer_fn[257];
 	fp filter[512];
 	fp last_error = 1;
-	parseopts(argc, argv);
+	//parseopts(argc, argv);
 	int last_N = 0;
 	// 250: 1
 	// 1000: 4
@@ -81,7 +89,7 @@ int main(int argc, char *argv[]) {
 	}, 256, SR);
 	filter_create(filter, transfer_fn, 512, [&](fp error, int N) {
 		if(N > last_N || error / last_error < 0.99) {
-			cout << "N " << N << ", error: " << error << "           \r" << flush;
+			//cout << "N " << N << ", error: " << error << "           \r" << flush;
 			last_N = N;
 			last_error = error;
 		}
@@ -94,7 +102,32 @@ int main(int argc, char *argv[]) {
 	filter[FDELAY] = 0;
 	for(int i=0;i<TDELAY;++i) {
 		int idx = i+FDELAY-TDELAY;
-		cout << fixer[i] - (idx > 0 ? filter[FDELAY-idx-1] : 0) << ' ';
+		results.push_back(fixer[i] - (idx > 0 ? filter[FDELAY-idx-1] : 0));
 	}
-	cout << endl;
+	//cout << endl;
+    return results;
+}
+
+
+int main(int argc, char *argv[])
+{
+    std::vector<int> rates = { 8000, 11025, 16000, 22050, 32000, 37800, 44056, 44100, 47250, 48000, 50000, 50400, 88200, 96000, 176400, 192000, 352800 };
+    
+    for (int rate : rates) {
+        std::vector<double> res = doFrequency(rate);
+        
+        printf("static const float kernel_%d = {\n", rate);
+        for (float v : res)
+            printf("%.10f, ", v);
+        printf("\n};\n\n");
+    }
+    
+    printf("\n\n\n");
+    
+    for (int rate : rates) {
+        printf("\tcase %d:\n", rate);
+        printf("\t\tfilter->filter = kernel_%d;\n", rate);
+        printf("\t\tfilter->delay = 0;\n");
+        printf("\t\tfilter->len = sizeof(kernel_%d)/sizeof(float);\n", rate);
+    }
 }

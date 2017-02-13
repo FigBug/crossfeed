@@ -30,6 +30,7 @@
 #define DSP_H
 #include <cmath>
 #include <memory>
+#define HAS_ACCELERATE 1
 #ifdef HAS_ACCELERATE
 #include <Accelerate/Accelerate.h>
 #else
