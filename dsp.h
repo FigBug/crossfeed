@@ -72,15 +72,31 @@ namespace fdesign {
 
 	template <>
 	void fft_context<float>::fft(float *result, const float *source) {
-		float response_memory[N];
 		float scale = 0.5;
 #if HAS_ACCELERATE
+        float response_memory[N];
 		DSPSplitComplex response = {response_memory, response_memory + N/2};
 		vDSP_ctoz((DSPComplex *)source, 2, &response, 1, N/2);
 		vDSP_fft_zrip((FFTSetup)context, &response, 1, logN, FFT_FORWARD);
 		vDSP_ztoc(&response, 1, (DSPComplex *)result, 2, N/2);
 		vDSP_vsmul(result, 1, &scale, result, 1, N);
 #else
+        FFT::Complex complexIn[N/2];
+        FFT::Complex complexOut[N/2];
+        
+        for (int i = 0; i < N/2; i++)
+        {
+            complexIn[i].r = source[i * 2];
+            complexIn[i].i = source[i * 2 + 1];
+        }
+        
+        juce_fft->perform(complexIn, complexOut);
+        
+        for (int i = 0; i < N/2; i++)
+        {
+            result[i * 2] = complexOut[i].r * scale;
+            result[i * 2 + 1] = complexOut[i].i * scale;
+        }
 #endif
 	}
 
@@ -119,16 +135,31 @@ namespace fdesign {
 
 	template <>
 	void fft_context<double>::fft(double *result, const double *source) {
-		double response_memory[N];
 		double scale = 0.5;
 #if HAS_ACCELERATE
+        double response_memory[N];
         DSPDoubleSplitComplex response = {response_memory, response_memory + N/2};
 		vDSP_ctozD((DSPDoubleComplex *)source, 2, &response, 1, N/2);
 		vDSP_fft_zripD((FFTSetupD)context, &response, 1, logN, FFT_FORWARD);
 		vDSP_ztocD(&response, 1, (DSPDoubleComplex *)result, 2, N/2);
 		vDSP_vsmulD(result, 1, &scale, result, 1, N);
 #else
+        FFT::Complex complexIn[N/2];
+        FFT::Complex complexOut[N/2];
         
+        for (int i = 0; i < N/2; i++)
+        {
+            complexIn[i].r = source[i * 2];
+            complexIn[i].i = source[i * 2 + 1];
+        }
+        
+        juce_fft->perform(complexIn, complexOut);
+        
+        for (int i = 0; i < N/2; i++)
+        {
+            result[i * 2] = complexOut[i].r * scale;
+            result[i * 2 + 1] = complexOut[i].i * scale;
+        }
 #endif
 	}
 
