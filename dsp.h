@@ -30,13 +30,21 @@
 #define DSP_H
 #include <cmath>
 #include <memory>
+#ifdef HAS_ACCELERATE
 #include <Accelerate/Accelerate.h>
+#else
+#include "juce_FFT.h"
+#endif
 
 namespace fdesign {
 	template <typename value_type>
 	class fft_context {
 	private:
+#if HAS_ACCELERATE
 		void *context;
+#else
+        std::unique_ptr<FFT> juce_fft;
+#endif
 	public:
 		const int N, logN;
 		fft_context(int N);
@@ -47,54 +55,97 @@ namespace fdesign {
 
 	template <>
 	fft_context<float>::fft_context(int N) : N(N), logN((int)std::round(std::log2(N))) {
+#if HAS_ACCELERATE
 		context = vDSP_create_fftsetup(logN, FFT_RADIX2);
+#else
+        juce_fft.reset (new FFT(logN, false));
+#endif
 	}
 
 	template <>
 	fft_context<float>::~fft_context() {
+#if HAS_ACCELERATE
 		vDSP_destroy_fftsetup((FFTSetup)context);
+#else
+#endif
 	}
 
 	template <>
 	void fft_context<float>::fft(float *result, const float *source) {
 		float response_memory[N];
 		float scale = 0.5;
+#if HAS_ACCELERATE
 		DSPSplitComplex response = {response_memory, response_memory + N/2};
 		vDSP_ctoz((DSPComplex *)source, 2, &response, 1, N/2);
 		vDSP_fft_zrip((FFTSetup)context, &response, 1, logN, FFT_FORWARD);
 		vDSP_ztoc(&response, 1, (DSPComplex *)result, 2, N/2);
 		vDSP_vsmul(result, 1, &scale, result, 1, N);
+#else
+#endif
 	}
 
 	template <>
 	void fft_context<float>::polar(float *magnitudes, float *source) {
+#if HAS_ACCELERATE
 		vDSP_polar(magnitudes, 2, source, 2, N/2);
+#else
+        for (int i = 0; i < N/2; i++)
+        {
+            int n1 = i * 2;
+            int n2 = i * 2 + 1;
+            
+            source[n1] = std::sqrt(magnitudes[n1] * magnitudes[n1] + magnitudes[n2] * magnitudes[n2]);
+            source[n2] = std::atan2(magnitudes[n2], magnitudes[n1]);
+        }
+#endif
 	}
 
 	template <>
 	fft_context<double>::fft_context(int N) : N(N), logN((int)std::round(std::log2(N))) {
+#if HAS_ACCELERATE
 		context = vDSP_create_fftsetupD(logN, FFT_RADIX2);
+#else
+        juce_fft.reset (new FFT(logN, false));
+#endif
 	}
 
 	template <>
 	fft_context<double>::~fft_context() {
+#if HAS_ACCELERATE
 		vDSP_destroy_fftsetupD((FFTSetupD)context);
+#else
+#endif
 	}
 
 	template <>
 	void fft_context<double>::fft(double *result, const double *source) {
 		double response_memory[N];
 		double scale = 0.5;
-		DSPDoubleSplitComplex response = {response_memory, response_memory + N/2};
+#if HAS_ACCELERATE
+        DSPDoubleSplitComplex response = {response_memory, response_memory + N/2};
 		vDSP_ctozD((DSPDoubleComplex *)source, 2, &response, 1, N/2);
 		vDSP_fft_zripD((FFTSetupD)context, &response, 1, logN, FFT_FORWARD);
 		vDSP_ztocD(&response, 1, (DSPDoubleComplex *)result, 2, N/2);
 		vDSP_vsmulD(result, 1, &scale, result, 1, N);
+#else
+        
+#endif
 	}
 
 	template <>
 	void fft_context<double>::polar(double *magnitudes, double *source) {
+#if HAS_ACCELERATE
 		vDSP_polarD(magnitudes, 2, source, 2, N/2);
+#else
+        for (int i = 0; i < N/2; i++)
+        {
+            int n1 = i * 2;
+            int n2 = i * 2 + 1;
+            
+            source[n1] = std::sqrt(magnitudes[n1] * magnitudes[n1] + magnitudes[n2] * magnitudes[n2]);
+            source[n2] = std::atan2(magnitudes[n2], magnitudes[n1]);
+        }
+#endif
 	}
 
 	template <typename value_type>
@@ -102,12 +153,22 @@ namespace fdesign {
 
 	template <>
 	void array_clear<float>(float *array, int N) {
+#if HAS_ACCELERATE
 		vDSP_vclr(array, 1, N);
+#else
+        for (int i = 0; i < N; i++)
+            array[i] = 0;
+#endif
 	}
 
 	template <>
 	void array_clear<double>(double *array, int N) {
-		vDSP_vclrD(array, 1, N);
+#if HAS_ACCELERATE
+        vDSP_vclrD(array, 1, N);
+#else
+        for (int i = 0; i < N; i++)
+            array[i] = 0;
+#endif
 	}
 
 	template <typename value_type>

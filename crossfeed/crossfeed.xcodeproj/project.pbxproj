@@ -13,6 +13,7 @@
 		787D640D1E5224EE008F2C76 /* crossfeed-player.cc in Sources */ = {isa = PBXBuildFile; fileRef = 787D64081E5224EE008F2C76 /* crossfeed-player.cc */; };
 		787D641C1E52263B008F2C76 /* designer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 787D641B1E52263B008F2C76 /* designer.cc */; };
 		787D641F1E522665008F2C76 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 787D641E1E522665008F2C76 /* Accelerate.framework */; };
+		787D64221E523444008F2C76 /* juce_FFT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 787D64211E523444008F2C76 /* juce_FFT.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -48,6 +49,9 @@
 		787D641A1E52263B008F2C76 /* filter_designer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = filter_designer.h; path = ../../filter_designer.h; sourceTree = "<group>"; };
 		787D641B1E52263B008F2C76 /* designer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = designer.cc; path = ../../designer.cc; sourceTree = "<group>"; };
 		787D641E1E522665008F2C76 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		787D64201E523444008F2C76 /* juce_FFT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = juce_FFT.h; path = ../../juce_FFT.h; sourceTree = "<group>"; };
+		787D64211E523444008F2C76 /* juce_FFT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = juce_FFT.cpp; path = ../../juce_FFT.cpp; sourceTree = "<group>"; };
+		787D64231E52363A008F2C76 /* juce_HeapBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_HeapBlock.h; path = ../../juce_HeapBlock.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +108,9 @@
 		787D64131E522606008F2C76 /* designer */ = {
 			isa = PBXGroup;
 			children = (
+				787D64201E523444008F2C76 /* juce_FFT.h */,
+				787D64211E523444008F2C76 /* juce_FFT.cpp */,
+				787D64231E52363A008F2C76 /* juce_HeapBlock.h */,
 				787D64191E52263B008F2C76 /* dsp.h */,
 				787D641A1E52263B008F2C76 /* filter_designer.h */,
 				787D641B1E52263B008F2C76 /* designer.cc */,
@@ -212,6 +219,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				787D641C1E52263B008F2C76 /* designer.cc in Sources */,
+				787D64221E523444008F2C76 /* juce_FFT.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
