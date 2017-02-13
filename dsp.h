@@ -33,7 +33,7 @@
 #ifdef HAS_ACCELERATE
 #include <Accelerate/Accelerate.h>
 #else
-#include "juce_FFT.h"
+#include "kiss_fft.h"
 #endif
 
 namespace fdesign {
@@ -43,7 +43,7 @@ namespace fdesign {
 #if HAS_ACCELERATE
 		void *context;
 #else
-        std::unique_ptr<FFT> juce_fft;
+        kiss_fft_cfg context;
 #endif
 	public:
 		const int N, logN;
@@ -58,7 +58,7 @@ namespace fdesign {
 #if HAS_ACCELERATE
 		context = vDSP_create_fftsetup(logN, FFT_RADIX2);
 #else
-        juce_fft.reset (new FFT(logN, false));
+        context = kiss_fft_alloc(N/2, 0, NULL, NULL);
 #endif
 	}
 
@@ -67,6 +67,7 @@ namespace fdesign {
 #if HAS_ACCELERATE
 		vDSP_destroy_fftsetup((FFTSetup)context);
 #else
+        free(context);
 #endif
 	}
 
@@ -81,21 +82,21 @@ namespace fdesign {
 		vDSP_ztoc(&response, 1, (DSPComplex *)result, 2, N/2);
 		vDSP_vsmul(result, 1, &scale, result, 1, N);
 #else
-        FFT::Complex complexIn[N/2];
-        FFT::Complex complexOut[N/2];
+        kiss_fft_cpx fin[N/2];
+        kiss_fft_cpx fout[N/2];
         
         for (int i = 0; i < N/2; i++)
         {
-            complexIn[i].r = source[i * 2];
-            complexIn[i].i = source[i * 2 + 1];
+            fin[i].r = source[i * 2];
+            fin[i].i = source[i * 2 + 1];
         }
         
-        juce_fft->perform(complexIn, complexOut);
+        kiss_fft(context, fin, fout);
         
         for (int i = 0; i < N/2; i++)
         {
-            result[i * 2] = complexOut[i].r * scale;
-            result[i * 2 + 1] = complexOut[i].i * scale;
+            result[i * 2] = fout[i].r * scale;
+            result[i * 2 + 1] = fout[i].i * scale;
         }
 #endif
 	}
@@ -121,7 +122,7 @@ namespace fdesign {
 #if HAS_ACCELERATE
 		context = vDSP_create_fftsetupD(logN, FFT_RADIX2);
 #else
-        juce_fft.reset (new FFT(logN, false));
+        context = kiss_fft_alloc(N/2, 0, NULL, NULL);
 #endif
 	}
 
@@ -130,6 +131,7 @@ namespace fdesign {
 #if HAS_ACCELERATE
 		vDSP_destroy_fftsetupD((FFTSetupD)context);
 #else
+        free(context);
 #endif
 	}
 
@@ -144,21 +146,21 @@ namespace fdesign {
 		vDSP_ztocD(&response, 1, (DSPDoubleComplex *)result, 2, N/2);
 		vDSP_vsmulD(result, 1, &scale, result, 1, N);
 #else
-        FFT::Complex complexIn[N/2];
-        FFT::Complex complexOut[N/2];
+        kiss_fft_cpx fin[N/2];
+        kiss_fft_cpx fout[N/2];
         
         for (int i = 0; i < N/2; i++)
         {
-            complexIn[i].r = source[i * 2];
-            complexIn[i].i = source[i * 2 + 1];
+            fin[i].r = source[i * 2];
+            fin[i].i = source[i * 2 + 1];
         }
         
-        juce_fft->perform(complexIn, complexOut);
+        kiss_fft(context, fin, fout);
         
         for (int i = 0; i < N/2; i++)
         {
-            result[i * 2] = complexOut[i].r * scale;
-            result[i * 2 + 1] = complexOut[i].i * scale;
+            result[i * 2] = fout[i].r * scale;
+            result[i * 2 + 1] = fout[i].i * scale;
         }
 #endif
 	}
