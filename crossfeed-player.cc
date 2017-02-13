@@ -72,7 +72,7 @@ public:
 	}
 	const char *next() {
 		if(_shuffle) {
-			srand(time(NULL));
+			srand((unsigned int)time(NULL));
 			random_shuffle(_files.begin(), _files.end(), [](unsigned int n) {
 				return rand() % n;
 			});
@@ -177,7 +177,6 @@ static void play_prev(Player *player, playlist *pl) {
 static void *audio_threadproc(void *data) {
 	struct Player player;
 	playlist *pl = (playlist *)data;
-	const char *file;
 	bool running = true;
 	if(CAInitPlayer(&player, &event_handler)) {
 		fprintf(stderr, "Error initializing audio output\n");

@@ -52,7 +52,6 @@ static OSStatus render_callback(void *data, AudioUnitRenderActionFlags *ioAction
 }
 
 OSStatus CAInitPlayer(struct Player *player, PlayerEventHandler eventHandler) {
-	OSStatus res = -1;
 	if(!eventHandler)
 		goto done;
 	player->handleEvent = eventHandler;
@@ -102,7 +101,6 @@ done:
 }
 
 OSStatus CAPlayFile(struct Player *player, const char *path) {
-	AudioFileID audioFile;
 	CFURLRef url = CFURLCreateFromFileSystemRepresentation(kCFAllocatorDefault, (UInt8*)path, strlen(path), false);
 	if(!url)
 		goto done;

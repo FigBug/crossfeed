@@ -41,23 +41,6 @@ int TDELAY;
 
 typedef float fp;
 
-static void compute_ideal_gabor_response(fp *response, const fp *crossfeed, int crossfeed_delay, gabor_context<fp> &dgt) {
-	fp signal[dgt.N];
-	fp samechan[dgt.N*((crossfeed_delay*2+2))/dgt.window_spacing];
-	fp crosschan[dgt.N*((crossfeed_delay*2+2))/dgt.window_spacing];
-	array_clear(signal, dgt.N);
-	signal[0] = 1;
-	dgt.dgt(samechan, signal, (crossfeed_delay*2+2));
-	for(int i=0;i<FDELAY;++i) {
-		signal[i+1] = crossfeed[FDELAY-i-1];
-	}
-	signal[0] = 0;
-	dgt.dgt(crosschan, signal, (crossfeed_delay*2+2));
-	for(int i=0;i<dgt.N*((crossfeed_delay*2+2))/dgt.window_spacing;++i) {
-		response[i] = samechan[i] + crosschan[i];
-	}
-}
-
 static void usage(int argc, char *argv[]) {
 	fprintf(stderr, "Usage: %s -s <samplerate>\n", argc ? argv[0] : "designer");
 	exit(-1);
@@ -96,7 +79,7 @@ int main(int argc, char *argv[]) {
 		fp val = -10/(1+exp(-x/250))+6-x*0.0006;
 		return pow(10, val / 20);
 	}, 256, SR);
-	auto res = filter_create(filter, transfer_fn, 512, [&](fp error, int N) {
+	filter_create(filter, transfer_fn, 512, [&](fp error, int N) {
 		if(N > last_N || error / last_error < 0.99) {
 			cout << "N " << N << ", error: " << error << "           \r" << flush;
 			last_N = N;

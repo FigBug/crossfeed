@@ -1,0 +1,12 @@
+
+*.o
+
+crossfeed-player
+
+*.xcuserstate
+
+*.xcbkptlist
+
+*.xcscheme
+
+crossfeed/crossfeed.xcodeproj/xcuserdata/rrabien.xcuserdatad/xcschemes/xcschememanagement.plist
